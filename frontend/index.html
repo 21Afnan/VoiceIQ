@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceIQ - Multi-Model AI Voice Agent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    
+    <style>
+        /* --- CSS RESET & VARIABLES --- */
+        :root {
+            --bg-dark: #090918; /* Deep space blue/black */
+            --bg-card: rgba(30, 30, 45, 0.6);
+            --primary-gradient: linear-gradient(135deg, #f43f5e, #a855f7);
+            --gemini-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --kimi-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --deepseek-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --text-gray: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- BACKGROUND STARS ANIMATION --- */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: twinkle 3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.1; transform: scale(0.8); }
+            100% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            /* NEW GRADIENT BACKGROUND AS PER IMAGE_2.PNG */
+            background: linear-gradient(90deg, #4e145a 0%, #a21caf 50%, #6b21a8 100%);
+            backdrop-filter: none; /* Removed blur for gradient to show */
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+
+        .logo-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff; /* Changed to solid white for better contrast on gradient */
+        }
+
+        .logo-text p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8); /* Lighter gray for subtitle */
+        }
+
+        .powered-by {
+            font-size: 0.8rem;
+            color: #60a5fa; /* Light blue */
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .main-container {
+            position: relative;
+            z-index: 5;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- MICROPHONE BOX --- */
+        .mic-box {
+            width: 100%;
+            max-width: 900px;
+            height: 350px;
+            background: linear-gradient(180deg, rgba(40,40,60,0.5) 0%, rgba(20,20,30,0.5) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        /* The glowing circle behind the mic */
+        /* --- MIC BUTTON PULSE EFFECT --- */
+        .mic-circle {
+           width: 80px;
+           height: 80px;
+           background: var(--primary-gradient);
+           border-radius: 50%;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           font-size: 2rem;
+           color: white;
+           box-shadow: 0 0 40px rgba(217, 70, 239, 0.4);
+           cursor: pointer;
+           transition: transform 0.2s, box-shadow 0.2s;
+           margin-bottom: 20px;
+           position: relative;
+           z-index: 1;
+        }
+
+        /* Pulse animation container */
+       .mic-circle::before {
+           content: '';
+           position: absolute;
+           width: 100%;
+           height: 100%;
+           border-radius: 50%;
+           background: var(--primary-gradient);
+           filter: blur(15px);
+           opacity: 0;
+           z-index: -1;
+           transition: opacity 0.3s, transform 0.3s;
+       }
+
+        /* On hover, show pulse */
+        .mic-circle:hover::before {
+            opacity: 0.6;
+            transform: scale(1.3);
+            animation: pulse 1.2s infinite;
+        }        
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.4); opacity: 0.3; }
+            100% { transform: scale(1); opacity: 0.6; }
+        }    
+
+        /* Slight scale on hover */
+        .mic-circle:hover {        
+            transform: scale(1.1);
+            box-shadow: 0 0 60px rgba(217, 70, 239, 0.6);
+        }
+        /* Active recording pulse (while mic is "recording") */
+        .mic-circle.recording::before {
+            opacity: 0.6;
+            transform: scale(1.3);
+            animation: pulse 1.2s infinite;
+        }
+        
+
+        .mic-text {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        .mic-intro {
+            text-align: center;
+            margin-bottom: 26px;
+            padding: 0 16px;
+        }
+
+        .mic-intro h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #f0abfc;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .mic-intro p {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.75);
+            max-width: 720px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* --- ERROR STATE STYLES (Hidden by default) --- */
+        .error-message-box {
+            display: none; /* Hidden initially */
+            background: rgba(239, 68, 68, 0.1); /* Red tint */
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 10px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .error-text {
+            color: #fca5a5;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .btn-retry {
+            background: rgba(239, 68, 68, 0.4);
+            border: none;
+            color: white;
+            padding: 8px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .btn-retry:hover {
+            background: rgba(239, 68, 68, 0.6);
+        }
+
+        /* --- FEATURES / INSTRUCTION SECTION (Visible in Idle) --- */
+        .features-section {
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+        
+        .sparkle-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-title {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badge.purple { background: rgba(109, 40, 217, 0.3); color: #d8b4fe; }
+        .badge.pink { background: rgba(190, 24, 93, 0.3); color: #f9a8d4; }
+        .badge.teal { background: rgba(15, 118, 110, 0.3); color: #99f6e4; }
+
+        /* --- RESULTS SECTION (Hidden initially) --- */
+        .results-section {
+            display: none; /* Hidden initially */
+            width: 100%;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-header {
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            font-size: 1.8rem;
+            color: #e879f9; /* Light purple */
+            margin-bottom: 5px;
+        }
+
+        .results-header p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(30, 30, 50, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(40, 40, 60, 0.5);
+        }
+
+        /* Branding Colors - colored card backgrounds per model */
+        .card.gemini {
+            background: radial-gradient(circle at top left, rgba(244, 114, 182, 0.3), rgba(30, 30, 50, 0.9));
+            border: 1px solid rgba(192, 132, 252, 0.6);
+            box-shadow: 0 0 25px rgba(192, 132, 252, 0.35);
+        }
+        .card.kimi {
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.25), rgba(30, 30, 50, 0.9));
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+        }
+        .card.deepseek {
+            background: radial-gradient(circle at top left, rgba(251, 146, 60, 0.28), rgba(30, 30, 50, 0.9));
+            border: 1px solid rgba(251, 146, 60, 0.6);
+            box-shadow: 0 0 25px rgba(251, 146, 60, 0.35);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-header-left {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .model-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .card-voice-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.85);
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .card-voice-btn:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .card-voice-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .card-voice-btn.gemini {
+            background: linear-gradient(135deg, #f472b6, #a855f7);
+            border-color: rgba(232,121,249,0.9);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(232,121,249,0.6);
+        }
+        .card-voice-btn.kimi {
+            background: linear-gradient(135deg, #38bdf8, #22d3ee);
+            border-color: rgba(125,211,252,0.9);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(56,189,248,0.6);
+        }
+        .card-voice-btn.deepseek {
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            border-color: rgba(251,146,60,0.9);
+            color: #111827;
+            box-shadow: 0 0 15px rgba(251,146,60,0.6);
+        }
+        /* --- CARDS HOVER EFFECT --- */
+        .card {
+           background: rgba(30, 30, 50, 0.4);
+           border: 1px solid var(--border-color);
+           border-radius: 16px;
+           padding: 20px;
+           display: flex;
+           flex-direction: column;
+           gap: 15px;
+           transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05); /* Slightly enlarge */
+       }
+        /* Hover specific for each model */
+        .card.gemini:hover {
+           border: 1px solid rgba(192, 132, 252, 0.8);
+           box-shadow: 0 10px 30px rgba(192, 132, 252, 0.3);
+        }
+
+        .card.kimi:hover {
+           border: 1px solid rgba(56, 189, 248, 0.8);
+           box-shadow: 0 10px 30px rgba(56, 189, 248, 0.3);
+        }
+
+        .card.deepseek:hover {
+            border: 1px solid rgba(251, 146, 60, 0.8);
+            box-shadow: 0 10px 30px rgba(251, 146, 60, 0.3);
+        }        
+
+
+        
+        .gemini-icon { background: var(--gemini-gradient); }
+        .kimi-icon { background: var(--kimi-gradient); }
+        .deepseek-icon { background: var(--deepseek-gradient); }
+
+        .model-info h3 {
+            font-size: 1.1rem;
+            line-height: 1.1;
+        }
+        
+        .gemini-text { color: #e879f9; }
+        .kimi-text { color: #7dd3fc; }
+        .deepseek-text { color: #fdba74; }
+
+        .model-info span {
+            font-size: 0.75rem;
+            color: #d1d5db;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .error-box-card {
+            background: rgba(30, 30, 50, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .error-title {
+            color: #fca5a5;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .error-desc {
+            color: #fecaca;
+            font-size: 0.8rem;
+        }
+        /* --- TRANSCRIBED QUESTION BOX --- */
+.transcribed-box {
+    width: 100%;
+    max-width: 900px;
+    background: rgba(40, 40, 60, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 30px;
+    color: #fff;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.transcribed-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+}
+
+.transcribed-box h3 {
+    margin-bottom: 10px;
+    color: #e879f9; /* Light purple for header */
+}
+
+.transcribed-box p {
+    font-size: 1rem;
+    color: #d1d5db; /* light gray text */
+}
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; flex-direction: column; gap: 10px; align-items: flex-start; }
+            .powered-by { align-self: flex-end; }
+            .mic-box { height: 250px; }
+            .results-header h2 { font-size: 1.4rem; }
+            .mic-intro h2 { font-size: 1.6rem; }
+            .mic-intro p { font-size: 0.95rem; }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="stars-container" id="starsContainer"></div>
+
+    <header>
+        <div class="logo-section">
+            <div class="logo-icon">
+                <i class="fa-solid fa-microphone"></i>
+            </div>
+            <div class="logo-text">
+                <h1>VoiceIQ</h1>
+                <p>Multi-Model AI Voice Agent</p>
+            </div>
+        </div>
+        <div class="powered-by">
+            Powered by Gemini, Kimi & DeepSeek
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <div class="mic-box" id="micBox">
+            <div class="mic-intro">
+                <h2>Ask Your Question</h2>
+                <p>Speak naturally about Sunmarke School. Our AI agents will compare answers.</p>
+            </div>
+            <div class="mic-circle" id="micBtn" onclick="toggleState()">
+                <i class="fa-solid fa-microphone"></i>
+            </div>
+            
+            <p class="mic-text" id="micInstruction">Click the microphone to start speaking</p>
+            
+            <div class="error-message-box" id="micError">
+                <p class="error-text" id="micErrorText">Could not transcribe audio. Please speak clearly and try again.</p>
+                <button class="btn-retry" onclick="resetState()">Try Again</button>
+            </div>
+        </div>
+        <!-- Transcribed Question Box -->
+<div class="transcribed-box" id="transcribedBox" style="display: none;">
+    <h3>Transcribed Question</h3>
+    <p id="transcribedText">Your speech will appear here...</p>
+</div>
+
+        <div class="features-section" id="featuresSection">
+            <div class="sparkle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <p class="feature-title">Click the microphone to record your question</p>
+            
+            <div class="badges">
+                <div class="badge purple"><i class="fa-solid fa-bolt"></i> Fast & Accurate</div>
+                <div class="badge pink"><i class="fa-solid fa-bullseye"></i> Multi-Model</div>
+                <div class="badge teal"><i class="fa-solid fa-volume-high"></i> Voice Enabled</div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>AI Agent Responses</h2>
+                <p>Compare answers from three different AI models trained on Sunmarke School content</p>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card gemini">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="model-icon gemini-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="model-info">
+                                <h3 class="gemini-text">Google Gemini</h3>
+                                <span>Advanced reasoning with multimodal understanding</span>
+                            </div>
+                        </div>
+                        <button class="card-voice-btn gemini" type="button" aria-label="Play Gemini voice" disabled>
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <div class="error-box-card">
+                        <div class="error-title">Waiting</div>
+                        <div class="error-desc">Ask a question to see this model's answer.</div>
+                    </div>
+                </div>
+
+                <div class="card kimi">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="model-icon kimi-icon"><i class="fa-solid fa-moon"></i></div>
+                            <div class="model-info">
+                                <h3 class="kimi-text">Moonshot Kimi</h3>
+                                <span>Long-context understanding specialist</span>
+                            </div>
+                        </div>
+                        <button class="card-voice-btn kimi" type="button" aria-label="Play Kimi voice" disabled>
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <div class="error-box-card">
+                        <div class="error-title">Waiting</div>
+                        <div class="error-desc">Ask a question to see this model's answer.</div>
+                    </div>
+                </div>
+
+                <div class="card deepseek">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="model-icon deepseek-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                            <div class="model-info">
+                                <h3 class="deepseek-text">DeepSeek</h3>
+                                <span>Deep reasoning and analysis</span>
+                            </div>
+                        </div>
+                        <button class="card-voice-btn deepseek" type="button" aria-label="Play DeepSeek voice" disabled>
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <div class="error-box-card">
+                        <div class="error-title">Waiting</div>
+                        <div class="error-desc">Ask a question to see this model's answer.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Generate Star Background ---
+        const starContainer = document.getElementById('starsContainer');
+        const starCount = 100;
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            // Random position
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            // Random size
+            const size = Math.random() * 3;
+            // Random animation delay
+            const delay = Math.random() * 3;
+
+            star.style.left = `${x}%`;
+            star.style.top = `${y}%`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.animationDelay = `${delay}s`;
+
+            starContainer.appendChild(star);
+        }
+
+        // --- 2. Interaction Logic ---
+        const micBox = document.getElementById('micBox');
+        const micBtn = document.getElementById('micBtn');
+        const micInstruction = document.getElementById('micInstruction');
+        const micError = document.getElementById('micError');
+        const featuresSection = document.getElementById('featuresSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const transcribedBox = document.getElementById('transcribedBox');
+        const transcribedText = document.getElementById('transcribedText');
+
+        // Use config.js values
+        const MODEL_MAP = {
+            gemini: 'Gemini',
+            kimi: 'Kimi',
+            deepseek: 'DeepSeek'
+        };
+
+        const MIN_AUDIO_SECONDS = 0.35;
+        const SILENCE_RMS_THRESHOLD = 0.008;
+        const MIN_BLOB_BYTES = 1500;
+
+        let featuresHideTimer = null;
+
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let isBusy = false; // converting/uploading/processing
+
+        function showResultsView() {
+            if (featuresHideTimer) {
+                clearTimeout(featuresHideTimer);
+                featuresHideTimer = null;
+            }
+            featuresSection.style.opacity = '0';
+            featuresHideTimer = setTimeout(() => {
+                featuresSection.style.display = 'none';
+                featuresHideTimer = null;
+            }, 250);
+            resultsSection.style.display = 'block';
+        }
+
+        function showIdleView() {
+            if (featuresHideTimer) {
+                clearTimeout(featuresHideTimer);
+                featuresHideTimer = null;
+            }
+            resultsSection.style.display = 'none';
+            featuresSection.style.display = 'block';
+            setTimeout(() => { featuresSection.style.opacity = '1'; }, 10);
+        }
+
+        function setMicIcon(isRecordingOn) {
+            const icon = micBtn.querySelector('i');
+            if (!icon) return;
+            if (isRecordingOn) {
+                icon.className = 'fa-solid fa-stop';
+            } else {
+                icon.className = 'fa-solid fa-microphone';
+            }
+        }
+
+        function setError(message) {
+            const micErrorText = document.getElementById('micErrorText');
+            if (micErrorText) micErrorText.innerText = message;
+            micError.style.display = 'block';
+        }
+
+        function clearError() {
+            micError.style.display = 'none';
+            const micErrorText = document.getElementById('micErrorText');
+            if (micErrorText) micErrorText.innerText = '';
+        }
+
+        async function toggleState() {
+            if (isBusy) {
+                Logger.warn('Still processing previous request, ignoring click');
+                return;
+            }
+            clearError();
+
+            if (!isRecording) {
+                // START recording
+                Logger.info('Starting audio recording...');
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    Logger.info('Microphone access granted');
+
+                    const preferredMime = (() => {
+    if (window.MediaRecorder?.isTypeSupported('audio/webm;codecs=opus')) {
+        return 'audio/webm;codecs=opus';
+    }
+    if (window.MediaRecorder?.isTypeSupported('audio/webm')) {
+        return 'audio/webm';
+    }
+    if (window.MediaRecorder?.isTypeSupported('audio/mp4')) {
+        return 'audio/mp4'; // Safari fallback
+    }
+    return '';
+})();
+
+Logger.debug('Preferred MIME type:', preferredMime);
+
+mediaRecorder = new MediaRecorder(
+    stream,
+    preferredMime ? { mimeType: preferredMime } : undefined
+);
+
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data && event.data.size > 0) {
+                            audioChunks.push(event.data);
+                            Logger.debug('Audio chunk received:', event.data.size);
+                        }
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        Logger.info('Recording stopped, processing audio...');
+                        isBusy = true;
+                        try {
+                            micInstruction.innerText = 'Converting audio...';
+                            const recordedBlob = new Blob(audioChunks, { type: preferredMime });
+                            Logger.debug('Recorded blob size:', recordedBlob.size);
+                            
+                            if (!recordedBlob || recordedBlob.size < MIN_BLOB_BYTES) {
+                                setError('Audio empty. Please speak and try again.');
+                                micInstruction.innerText = 'Click the microphone to try again';
+                                return;
+                            }
+
+                            const { wavBlob, durationSec, rms } = await ensureWavBlob(recordedBlob);
+                            Logger.debug('WAV conversion:', { durationSec, rms });
+
+                            // Client-side guard to avoid backend 500 on silence / empty speech
+                            if (!wavBlob || durationSec < MIN_AUDIO_SECONDS || rms < SILENCE_RMS_THRESHOLD) {
+    isBusy = false;
+    setError('Audio empty (no speech detected). Please speak and try again.');
+    micInstruction.innerText = 'Click the microphone to try again';
+    return;
+}
+
+                            Logger.info('Audio validated, uploading to backend...');
+                            micInstruction.innerText = 'Uploading audio...';
+                            await sendAudioToBackend(wavBlob);
+                        } catch (err) {
+                            Logger.error('Error processing audio:', err);
+                            console.error('Full error:', err); // Extra logging
+                            
+                            let errorMsg = err?.message || String(err) || 'Something went wrong while processing audio';
+                            
+                            // If conversion/upload failed, keep user informed
+                            if (!micError || micError.style.display !== 'block') {
+                                setError(errorMsg);
+                            }
+                            micInstruction.innerText = 'Click the microphone to try again';
+                        } finally {
+                            stream.getTracks().forEach(track => track.stop());
+                            isBusy = false;
+                        }
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    micBtn.classList.add('recording');
+                    setMicIcon(true);
+                    micInstruction.style.display = 'block';
+                    micInstruction.innerText = 'Recording... Click to stop';
+                } catch (err) {
+                    setError('Microphone access denied or unavailable.');
+                }
+                return;
+            }
+
+            // STOP recording
+            try {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    Logger.info('Stopping recording...');
+                    isBusy = true;
+                    micInstruction.innerText = 'Processing your question...';
+                    // Show results area immediately so UI doesn't "jump back" while processing
+                    showResultsView();
+                    setCardsLoading(true);
+                    mediaRecorder.stop();
+                } else {
+                    Logger.warn('MediaRecorder not ready or already inactive');
+                }
+            } catch (err) {
+                Logger.error('Error stopping recording:', err);
+            } finally {
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                setMicIcon(false);
+            }
+        }
+
+        async function sendAudioToBackend(audioBlob) {
+            // UI: keep results container visible (no reset to idle)
+            Logger.info('Sending audio to backend...');
+            showResultsView();
+
+            // Reset transcribed box
+            transcribedText.innerText = '';
+            transcribedBox.style.display = 'none';
+
+            // Reset cards to loading state
+            setCardsLoading(true);
+
+            Logger.debug('Audio blob size:', audioBlob?.size);
+
+            // Save recording with counter
+            saveRecording(audioBlob);
+
+            let data;
+            try {
+                Logger.info('Calling sendVoiceToAPI...');
+                const response = await sendVoiceToAPI(audioBlob);
+                Logger.info('Response received from API');
+                data = response;
+            } catch (error) {
+                const message = formatErrorMessage(error);
+                Logger.error('API Error:', message);
+                console.error('Full API error:', error); // Extra logging
+                setCardsError(message);
+                setError(message);
+                micInstruction.innerText = 'Click the microphone to try again';
+                return;
+            }
+
+            if (!data) {
+                Logger.error('No data returned from API');
+                setCardsError('No response from backend');
+                setError('No response from backend');
+                micInstruction.innerText = 'Click the microphone to try again';
+                return;
+            }
+
+            Logger.info('Processing API response...');
+
+            // Show transcript
+            transcribedText.innerText = data.question_voice_text || '';
+            transcribedBox.style.display = 'block';
+
+            // Render answers
+            renderAnswers(data.answers_text || {}, data.answers_audio || {});
+
+            micInstruction.innerText = 'Click the microphone to ask another question';
+        }
+
+        function saveRecording(audioBlob) {
+            try {
+                const fileName = getRecordingFileName('recording');
+                const url = URL.createObjectURL(audioBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                Logger.info('Recording saved:', fileName);
+            } catch (err) {
+                Logger.warn('Could not auto-save recording:', err.message);
+            }
+        }
+
+        function setCardsLoading(isLoading) {
+            ['gemini', 'kimi', 'deepseek'].forEach(modelClass => {
+                const card = document.querySelector(`.card.${modelClass}`);
+                if (!card) return;
+                const box = card.querySelector('.error-box-card');
+                if (!box) return;
+
+                if (isLoading) {
+                    box.innerHTML = `
+                        <div style="color:#d1d5db;font-size:0.9rem;">Processing...</div>
+                        <div style="color:#a1a1aa;font-size:0.8rem;margin-top:6px;">Please wait</div>
+                    `;
+                    box.style.background = 'rgba(30, 30, 50, 0.35)';
+                    box.style.border = '1px solid rgba(255,255,255,0.1)';
+                }
+            });
+        }
+
+        function setCardsError(message) {
+            ['gemini', 'kimi', 'deepseek'].forEach(modelClass => {
+                const card = document.querySelector(`.card.${modelClass}`);
+                if (!card) return;
+                const box = card.querySelector('.error-box-card');
+                if (!box) return;
+                box.innerHTML = `
+                    <div class="error-title">Error</div>
+                    <div class="error-desc">${escapeHtml(message || 'Request failed')}</div>
+                `;
+            });
+        }
+
+        function renderAnswers(answersText, answersAudio) {
+            Logger.debug('Rendering answers:', { answersText, answersAudio });
+            
+            // Backend now returns { modelName: { text: "...", audio: hexString or filepath } }
+            // Convert to processable format
+            const processedAnswers = {};
+            
+            for (const [modelName, data] of Object.entries(answersText || {})) {
+                if (data && typeof data === 'object' && 'text' in data) {
+                    // New format from backend
+                    processedAnswers[modelName] = {
+                        text: data.text || '',
+                        audio: answersAudio?.[modelName] || data.audio || null
+                    };
+                } else {
+                    // Old format - just text string
+                    processedAnswers[modelName] = {
+                        text: data || '',
+                        audio: answersAudio?.[modelName] || null
+                    };
+                }
+            }
+            
+            Logger.debug('Processed answers:', processedAnswers);
+            
+            // Now render each model's answer
+            ['gemini', 'kimi', 'deepseek'].forEach(modelClass => {
+                const modelKey = MODEL_MAP[modelClass];
+                const card = document.querySelector(`.card.${modelClass}`);
+                if (!card) return;
+                const box = card.querySelector('.error-box-card');
+                if (!box) return;
+
+                // Get answer data
+                const answerData = processedAnswers[modelKey];
+                if (!answerData) {
+                    box.innerHTML = `
+                        <div class="error-title">No Response</div>
+                        <div class="error-desc">No answer from ${modelKey}.</div>
+                    `;
+                    return;
+                }
+                
+                const text = answerData.text || '';
+                const hexAudio = (answerData.audio && isValidHexString(String(answerData.audio))) ? String(answerData.audio) : '';
+                
+                Logger.debug(`${modelKey} status:`, {
+                    hasText: !!text,
+                    hasHex: !!hexAudio,
+                    hexLength: hexAudio.length,
+                    isValid: isValidHexString(hexAudio)
+                });
+
+                // Sync top-right voice icon button (in the card header)
+                const headerVoiceBtn = card.querySelector('.card-voice-btn');
+                if (headerVoiceBtn) {
+                    headerVoiceBtn.disabled = !hexAudio;
+                    headerVoiceBtn.setAttribute('data-hex', hexAudio || '');
+                    headerVoiceBtn.onclick = () => {
+                        const hex = headerVoiceBtn.getAttribute('data-hex') || '';
+                        if (!hex) {
+                            Logger.warn('No hex data on header voice button');
+                            return;
+                        }
+                        Logger.info('Playing audio from header button');
+                        playHexMp3(hex);
+                    };
+                }
+
+                const safeText = escapeHtml(text);
+
+                if (!text) {
+                    box.innerHTML = `
+                        <div class="error-title">No Response</div>
+                        <div class="error-desc">This model did not return an answer.</div>
+                    `;
+                    return;
+                }
+
+                box.innerHTML = `
+                    <div style="color:#d1d5db;line-height:1.6;white-space:pre-wrap;">${safeText}</div>
+                    <button class="play-audio-btn" data-model="${modelClass}" data-hex="${hexAudio || ''}" ${hexAudio ? '' : 'disabled'}
+                        style="margin-top:12px;background:${hexAudio ? 'rgba(168,85,247,0.2)' : 'rgba(148,163,184,0.12)'};
+                               border:1px solid ${hexAudio ? 'rgba(168,85,247,0.4)' : 'rgba(148,163,184,0.25)'};
+                               color:${hexAudio ? '#e879f9' : '#94a3b8'};
+                               padding:8px 14px;border-radius:8px;cursor:${hexAudio ? 'pointer' : 'not-allowed'};display:inline-flex;
+                               align-items:center;gap:8px;font-size:0.85rem;">
+                        <i class=\"fa-solid ${hexAudio ? 'fa-volume-high' : 'fa-volume-xmark'}\"></i>
+                        ${hexAudio ? 'Play Voice' : 'Voice Unavailable'}
+                    </button>
+                `;
+
+                const btn = box.querySelector('.play-audio-btn');
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const hex = btn.getAttribute('data-hex');
+                        Logger.info(`Play button clicked for ${modelClass}`, { hexLength: hex ? hex.length : 0 });
+                        
+                        if (btn.disabled || !hex) {
+                            Logger.warn(`Cannot play: disabled=${btn.disabled}, hexEmpty=${!hex}`);
+                            return;
+                        }
+                        playHexMp3(hex);
+                    });
+                }
+            });
+        }
+
+        function playHexMp3(hex) {
+            Logger.debug('Attempting to play audio, hex length:', hex ? hex.length : 0);
+            
+            if (!hex) {
+                Logger.error('No audio data provided');
+                setError('No audio data available for playback');
+                return;
+            }
+
+            playAudioFromHex(hex, (error) => {
+                const message = 'Audio playback failed: ' + formatErrorMessage(error);
+                Logger.error('Audio playback error:', error);
+                setError(message);
+            }).catch(error => {
+                Logger.error('Audio playback failed', error);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const str = String(text);
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function ensureWavBlob(blob) {
+    Logger.info('Starting WAV conversion...');
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        Logger.debug('AudioContext created');
+        
+        const arrayBuffer = await blob.arrayBuffer();
+        Logger.debug('Blob converted to ArrayBuffer, size:', arrayBuffer.byteLength);
+        
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+        Logger.debug('Audio decoded, sample rate:', audioBuffer.sampleRate, 'channels:', audioBuffer.numberOfChannels);
+
+        const mono = downmixToMono(audioBuffer);
+        Logger.debug('Downmixed to mono, samples:', mono.length);
+        
+        const rms = computeRms(mono);
+        Logger.debug('Computed RMS:', rms);
+        
+        const durationSec = audioBuffer.duration;
+        Logger.debug('Duration:', durationSec, 'seconds');
+
+        const wavArrayBuffer = monoToWav(mono, audioBuffer.sampleRate);
+        Logger.debug('WAV buffer created, size:', wavArrayBuffer.byteLength);
+
+        Logger.info('WAV conversion complete');
+        return {
+            wavBlob: new Blob([wavArrayBuffer], { type: 'audio/wav' }),
+            durationSec,
+            rms
+        };
+    } catch (err) {
+        Logger.error('WAV conversion failed:', err);
+        console.error('WAV conversion full error:', err);
+        throw err;
+    } finally {
+        try {
+            await audioCtx.close();
+        } catch (e) {
+            Logger.debug('AudioContext close error (expected):', e.message);
+        }
+    }
+}
+
+
+
+        function computeRms(samples) {
+            if (!samples || samples.length === 0) return 0;
+            let sumSquares = 0;
+            for (let i = 0; i < samples.length; i++) {
+                const s = samples[i];
+                sumSquares += s * s;
+            }
+            return Math.sqrt(sumSquares / samples.length);
+        }
+
+        function downmixToMono(audioBuffer) {
+            const numChannels = audioBuffer.numberOfChannels;
+            const length = audioBuffer.length * audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const mono = new Float32Array(audioBuffer.length);
+
+            if (numChannels === 1) {
+                // Already mono
+                return audioBuffer.getChannelData(0).slice(0);
+            }
+
+            // Mix all channels to mono
+            const channelData = [];
+            for (let i = 0; i < numChannels; i++) {
+                channelData.push(audioBuffer.getChannelData(i));
+            }
+
+            for (let i = 0; i < audioBuffer.length; i++) {
+                let sample = 0;
+                for (let ch = 0; ch < numChannels; ch++) {
+                    sample += channelData[ch][i];
+                }
+                mono[i] = sample / numChannels;
+            }
+
+            return mono;
+        }
+
+        function monoToWav(mono, sampleRate) {
+            const bytesPerSample = 2; // 16-bit
+            const blockAlign = 1 * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = mono.length * bytesPerSample;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            // RIFF header
+            writeAscii(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeAscii(view, 8, 'WAVE');
+
+            // fmt chunk
+            writeAscii(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // PCM
+            view.setUint16(20, 1, true);  // Audio format = PCM
+            view.setUint16(22, 1, true);  // Channels = 1 (mono)
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true); // bits per sample
+
+            // data chunk
+            writeAscii(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            // PCM samples
+            let offset = 44;
+            for (let i = 0; i < mono.length; i++) {
+                const s = Math.max(-1, Math.min(1, mono[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+                offset += 2;
+            }
+
+            return buffer;
+        }
+
+        function writeAscii(view, offset, text) {
+            for (let i = 0; i < text.length; i++) {
+                view.setUint8(offset + i, text.charCodeAt(i));
+            }
+        }
+
+function resetState() {
+    if (isBusy) {
+        // Don't allow UI reset during processing
+        return;
+    }
+    micBtn.classList.remove('recording');
+    setMicIcon(false);
+    showIdleView();
+
+    micInstruction.style.display = 'block';
+    micInstruction.innerText = "Click the microphone to start speaking";
+    clearError();
+
+    transcribedBox.style.display = 'none';
+    transcribedText.innerText = "";
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    Logger.info('VoiceIQ Frontend loaded');
+    
+    // Check API health
+    const isHealthy = await checkAPIHealth();
+    if (!isHealthy) {
+        Logger.warn('Backend API is not responding. Please start the backend server.');
+        setError(`Cannot connect to backend at ${API_CONFIG.BASE_URL}. Please start the FastAPI server.`);
+    } else {
+        Logger.info('Backend API is healthy');
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopAudioPlayback();
+});
+
+    </script>
+</body>
+</html>

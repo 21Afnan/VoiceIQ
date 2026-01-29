@@ -1,0 +1,24 @@
+# --- Core scraping ---
+requests==2.31.0
+beautifulsoup4==4.12.3
+
+# --- Text processing & embeddings ---
+sentence-transformers>=2.6.1
+numpy>=2.0.0
+scikit-learn>=1.4.0
+
+# --- FAISS (vector search) ---
+faiss-cpu>=1.8.0
+
+# --- LLM APIs ---
+google-generativeai>=0.3.2
+python-dotenv>=1.0.1
+
+# --- API / Server ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.30.0
+python-multipart
+
+# --- Audio ---
+gtts>=2.5.0
+deepgram-sdk>=3.0.0
