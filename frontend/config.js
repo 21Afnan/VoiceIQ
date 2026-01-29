@@ -204,16 +204,33 @@ function hexToBytes(hex) {
 // ============================================
 // PLAY AUDIO FROM HEX
 // ============================================
-async function playAudioFromHex(hex, onError = null) {
+let __currentAudio = null;
+let __currentAudioUrl = null;
+let __currentAudioHex = null;
+
+async function playAudioFromHex(hex, onError = null, options = {}) {
     try {
         if (!isValidHexString(hex)) {
             throw new Error('Invalid or empty audio data');
         }
 
+        // Toggle: if the same audio is currently playing, stop it.
+        if (options?.toggle && __currentAudio && __currentAudioHex === hex && !__currentAudio.paused) {
+            stopAudioPlayback();
+            return;
+        }
+
+        // Always stop any currently-playing audio before starting new.
+        stopAudioPlayback();
+
         const bytes = hexToBytes(hex);
         const blob = new Blob([bytes], { type: 'audio/mpeg' });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
+
+        __currentAudio = audio;
+        __currentAudioUrl = url;
+        __currentAudioHex = hex;
 
         return new Promise((resolve, reject) => {
             audio.onplay = () => {
@@ -222,13 +239,23 @@ async function playAudioFromHex(hex, onError = null) {
 
             audio.onended = () => {
                 console.log('Audio playback ended');
-                URL.revokeObjectURL(url);
+                if (__currentAudioUrl) {
+                    URL.revokeObjectURL(__currentAudioUrl);
+                }
+                __currentAudio = null;
+                __currentAudioUrl = null;
+                __currentAudioHex = null;
                 resolve();
             };
 
             audio.onerror = (e) => {
                 console.error('Audio playback error:', e);
-                URL.revokeObjectURL(url);
+                if (__currentAudioUrl) {
+                    URL.revokeObjectURL(__currentAudioUrl);
+                }
+                __currentAudio = null;
+                __currentAudioUrl = null;
+                __currentAudioHex = null;
                 const error = new Error(`Audio playback failed: ${audio.error?.message || 'Unknown error'}`);
                 if (onError) onError(error);
                 reject(error);
@@ -236,7 +263,12 @@ async function playAudioFromHex(hex, onError = null) {
 
             audio.play().catch(error => {
                 console.error('Failed to start audio playback:', error);
-                URL.revokeObjectURL(url);
+                if (__currentAudioUrl) {
+                    URL.revokeObjectURL(__currentAudioUrl);
+                }
+                __currentAudio = null;
+                __currentAudioUrl = null;
+                __currentAudioHex = null;
                 if (onError) onError(error);
                 reject(error);
             });
@@ -252,10 +284,40 @@ async function playAudioFromHex(hex, onError = null) {
 // STOP AUDIO PLAYBACK
 // ============================================
 function stopAudioPlayback() {
+    // Stop the programmatic Audio() instance created by playAudioFromHex
+    try {
+        if (__currentAudio) {
+            __currentAudio.onplay = null;
+            __currentAudio.onended = null;
+            __currentAudio.onerror = null;
+            __currentAudio.pause();
+            __currentAudio.currentTime = 0;
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    try {
+        if (__currentAudioUrl) {
+            URL.revokeObjectURL(__currentAudioUrl);
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    __currentAudio = null;
+    __currentAudioUrl = null;
+    __currentAudioHex = null;
+
+    // Also stop any <audio> elements that might exist in the DOM
     const audioElements = document.querySelectorAll('audio');
-    audioElements.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
+    audioElements.forEach(el => {
+        try {
+            el.pause();
+            el.currentTime = 0;
+        } catch (e) {
+            // ignore
+        }
     });
 }
 

@@ -908,9 +908,13 @@ mediaRecorder = new MediaRecorder(
 
             Logger.debug('Audio blob size:', audioBlob?.size);
 
-            // Save recording with counter
-            saveRecording(audioBlob);
-
+            // NOTE: Auto-downloading the recording can trigger navigation/reload in some browsers,
+            // which looks like the page "resetting" before results render.
+            // Enable only for debugging.
+            const AUTO_DOWNLOAD_RECORDING = false;
+            if (AUTO_DOWNLOAD_RECORDING) {
+                saveRecording(audioBlob);
+            }
             let data;
             try {
                 Logger.info('Calling sendVoiceToAPI...');
@@ -936,6 +940,13 @@ mediaRecorder = new MediaRecorder(
             }
 
             Logger.info('Processing API response...');
+
+            // Persist last successful response so an accidental reload can restore results.
+            try {
+                sessionStorage.setItem('voiceiq:lastResult', JSON.stringify(data));
+            } catch (e) {
+                // ignore storage failures
+            }
 
             // Show transcript
             transcribedText.innerText = data.question_voice_text || '';
@@ -1282,6 +1293,24 @@ function resetState() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     Logger.info('VoiceIQ Frontend loaded');
+
+    // Restore last result (helps if the page reloads due to dev tooling or browser quirks)
+    try {
+        const raw = sessionStorage.getItem('voiceiq:lastResult');
+        if (raw) {
+            const last = JSON.parse(raw);
+            if (last && (last.answers_text || last.answers_audio || last.question_voice_text)) {
+                Logger.info('Restoring last results from sessionStorage');
+                showResultsView();
+                transcribedText.innerText = last.question_voice_text || '';
+                transcribedBox.style.display = last.question_voice_text ? 'block' : 'none';
+                renderAnswers(last.answers_text || {}, last.answers_audio || {});
+                micInstruction.innerText = 'Click the microphone to ask another question';
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
     
     // Check API health
     const isHealthy = await checkAPIHealth();

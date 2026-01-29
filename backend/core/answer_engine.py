@@ -61,12 +61,12 @@ class AnswerEngine:
                     text_answer = future.result()
                     print(f"✅ {name} Response: {text_answer[:100]}...")
 
-                    # 3️⃣ Generate voice for each answer
-                    audio_file = text_to_speech(text_answer)
+                    # 3️⃣ Generate voice for each answer (MP3 bytes; avoids filesystem writes)
+                    audio_bytes = text_to_speech(text_answer, return_bytes=True)
 
                     results[name] = {
                         "text": text_answer,
-                        "audio": audio_file
+                        "audio": audio_bytes
                     }
 
                 except Exception as e:

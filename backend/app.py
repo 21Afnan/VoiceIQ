@@ -65,18 +65,25 @@ async def ask_voice(file: UploadFile = File(...)):
             text = result.get('text', '') if isinstance(result, dict) else str(result)
             answers_text[model] = text
             
-            # Convert audio filepath to hex
-            audio_filepath = result.get('audio') if isinstance(result, dict) else None
-            if audio_filepath:
-                try:
-                    with open(audio_filepath, 'rb') as f:
+            # Convert audio (bytes or filepath) to hex
+            audio_value = result.get('audio') if isinstance(result, dict) else None
+            if not audio_value:
+                answers_audio[model] = None
+                continue
+
+            try:
+                if isinstance(audio_value, (bytes, bytearray)):
+                    audio_bytes = bytes(audio_value)
+                elif isinstance(audio_value, str):
+                    with open(audio_value, 'rb') as f:
                         audio_bytes = f.read()
-                    answers_audio[model] = audio_bytes.hex()
-                    print(f"✅ Audio hex generated for {model}: {len(audio_bytes)} bytes")
-                except Exception as e:
-                    print(f"❌ Audio hex failed for {model}: {str(e)}")
-                    answers_audio[model] = None
-            else:
+                else:
+                    raise TypeError(f"Unsupported audio type: {type(audio_value)}")
+
+                answers_audio[model] = audio_bytes.hex()
+                print(f"✅ Audio hex generated for {model}: {len(audio_bytes)} bytes")
+            except Exception as e:
+                print(f"❌ Audio hex failed for {model}: {str(e)}")
                 answers_audio[model] = None
 
         return {
