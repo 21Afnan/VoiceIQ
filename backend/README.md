@@ -14,7 +14,7 @@ This is the backend service for VoiceIQ, providing:
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecturee
 
 ```
 backend/
