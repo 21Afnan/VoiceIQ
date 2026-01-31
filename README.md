@@ -364,48 +364,6 @@ DEEPGRAM_API_KEY=4ade...
 
 ---
 
-## 💰 Cost Estimation
-
-| Service | Cost per 1,000 Queries |
-|---------|----------------------|
-| Deepgram STT | ~$4 |
-| Gemini | ~$2 |
-| OpenRouter (DeepSeek/Kimi) | ~$3 |
-| Google TTS | ~$1 |
-| **Total** | **~$10** |
-
-> Actual costs depend on API pricing and usage patterns. Monitor your dashboard regularly.
-
----
-
-## 🌐 Deployment
-
-### **Backend Deployment Options**
-- **Heroku** – Easy drag-and-drop Python deployment
-- **Railway** – Modern cloud platform
-- **AWS EC2** – Traditional cloud VM
-- **DigitalOcean** – Affordable cloud hosting
-- **Google Cloud Run** – Serverless (auto-scaling)
-
-### **Frontend Deployment Options**
-- **Vercel** – Optimal for Next.js/static sites
-- **Netlify** – Git-based continuous deployment
-- **GitHub Pages** – Free static hosting
-- **Same server** – Serve frontend from FastAPI
-
-### **Production Checklist**
-```
-[ ] API keys stored securely (secrets manager)
-[ ] CORS properly configured for domain
-[ ] Rate limiting enabled
-[ ] Logging & monitoring setup
-[ ] Error handling comprehensive
-[ ] Database backups scheduled
-[ ] SSL/TLS certificates installed
-[ ] Performance optimized
-[ ] Load testing completed
-```
-
 ---
 
 ## ⚠️ Limitations & Considerations
