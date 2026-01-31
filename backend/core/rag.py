@@ -13,6 +13,7 @@ CHUNKS_FILE = os.path.join(DATA_DIR, "chunks.json")
 EMBEDDINGS_FILE = os.path.join(DATA_DIR, "embeddings.json")
 
 TOP_K = 5  # number of chunks to retrieve
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"  # must match the model used during ingestion
 
 
 # -----------------------------
@@ -48,7 +49,9 @@ def build_faiss_index(embeddings):
 class RAGRetriever:
     def __init__(self):
         try:
-            self.model = SentenceTransformer("all-MiniLM-L6-v2")
+            # Important: this model must match the one used to generate embeddings.json,
+            # otherwise FAISS search will fail due to dimension mismatch.
+            self.model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 
             self.chunks = load_json(CHUNKS_FILE)
             self.embeddings = load_json(EMBEDDINGS_FILE)
@@ -65,9 +68,27 @@ class RAGRetriever:
         if not query or not query.strip():
             raise ValueError("Query is empty")
 
+        top_k = int(top_k) if top_k is not None else TOP_K
+        if top_k <= 0:
+            return []
+
+        # FAISS requires k to be sensible; cap it to available vectors/chunks.
+        top_k = min(top_k, len(self.chunks), int(getattr(self.index, "ntotal", len(self.chunks))))
+        if top_k <= 0:
+            return []
+
         try:
             query_vector = self.model.encode(query).astype("float32")
             query_vector = np.expand_dims(query_vector, axis=0)
+
+            index_dim = int(getattr(self.index, "d", query_vector.shape[1]))
+            if query_vector.shape[1] != index_dim:
+                raise ValueError(
+                    "Embedding dimension mismatch between query and FAISS index. "
+                    f"Query dim={query_vector.shape[1]} vs index dim={index_dim}. "
+                    "Regenerate embeddings.json using the same model as the retriever "
+                    f"(expected {EMBEDDING_MODEL_NAME})."
+                )
 
             distances, indices = self.index.search(query_vector, top_k)
 

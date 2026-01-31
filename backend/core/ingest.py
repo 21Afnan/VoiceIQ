@@ -19,10 +19,10 @@ HEADERS = {
 }
 
 RELEVANCE_ANCHOR = """
-Information about a school's admissions, eligibility criteria,
-application process, academic programs, curriculum, fees,
-student life, facilities, calendars, assessments, policies,
-and daily school operations.
+Sunmarke School admissions, age criteria, enrollment process,
+academic calendar, curriculum, IB curriculum, British curriculum, class levels,
+school fees, facilities, student life, assessment system,
+school timings, policies, mission, vision, region of the school, overview of Sunmarke School
 """
 
 # -----------------------------
@@ -108,10 +108,10 @@ def semantic_filter(pages, model):
     relevant_pages = []
 
     for page in pages:
-        page_embedding = model.encode(page["content"][:2000])
+        page_embedding = model.encode(page["content"][:1200])
         score = cosine_similarity(anchor_embedding, page_embedding)
 
-        if score > 0.35:
+        if score > 0.25:
             page["relevance_score"] = round(float(score), 3)
             relevant_pages.append(page)
 
@@ -194,8 +194,11 @@ if __name__ == "__main__":
     raw_pages = crawl_site()
     print(f"Raw pages crawled: {len(raw_pages)}")
 
-    relevant_pages = semantic_filter(raw_pages, model)
-    print(f"Semantically relevant pages: {len(relevant_pages)}")
+    #relevant_pages = semantic_filter(raw_pages, model)
+    #print(f"Semantically relevant pages: {len(relevant_pages)}")
+    # TEMPORARY: skip semantic filtering to debug retrieval
+    relevant_pages = raw_pages
+    print(f"Using all pages (semantic filter skipped): {len(relevant_pages)}")
 
     chunks = create_chunks(relevant_pages)
     print(f"Chunks created: {len(chunks)}")

@@ -26,7 +26,7 @@ class AnswerEngine:
     # -----------------------------
     # Generate answers + voice
     # -----------------------------
-    def answer(self, question, top_k=5):
+    def answer(self, question, top_k=8):
         #  Retrieve context
         chunks = self.retriever.retrieve(question, top_k=top_k)
         
