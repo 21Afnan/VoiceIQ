@@ -364,8 +364,6 @@ DEEPGRAM_API_KEY=4ade...
 
 ---
 
----
-
 ## ⚠️ Limitations & Considerations
 
 ### **Current Limitations**
