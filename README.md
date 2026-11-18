@@ -1,429 +1,130 @@
 <div align="center">
 
-# 🎙️ VoiceIQ  
-### **Voice-First Multi-Model AI Assistant**  
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:4A0D2E,50:C2185B,100:FF8FC7&height=200&section=header&text=VoiceIQ&fontSize=58&fontColor=FFFFFF&fontAlignY=36&desc=Ask%20a%20website%20a%20question%20out%20loud%2C%20hear%20three%20AI%20models%20answer&descSize=16&descAlignY=58" width="100%" alt="VoiceIQ"/>
 
-<p align="center">
-  <strong><em>Talk to AI. Hear from many minds. One intelligent voice.</em></strong>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Production Ready-success?style=flat-square&color=10B981"/>
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python"/>
-  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi"/>
-  <img src="https://img.shields.io/badge/Multi--LLM-Orchestration-FF6B6B?style=flat-square"/>
-  <img src="https://img.shields.io/badge/Voice--AI-STT%20%7C%20TTS-E91E63?style=flat-square"/>
-</p>
-
-<p align="center">
-  <strong>
-    Voice-First AI • RAG-Powered • Multi-LLM • Production-Ready
-  </strong>
+<p>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/Deepgram-13EF93?style=for-the-badge&logoColor=black" alt="Deepgram"/>
+  <img src="https://img.shields.io/badge/FAISS-0467DF?style=for-the-badge&logo=meta&logoColor=white" alt="FAISS"/>
+  <img src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini"/>
+  <img src="https://img.shields.io/badge/OpenRouter-6566F1?style=for-the-badge" alt="OpenRouter"/>
+  <img src="https://img.shields.io/badge/License-MIT-FF4FA3?style=for-the-badge" alt="MIT License"/>
 </p>
 
 </div>
 
 ---
 
-## 🌟 About VoiceIQ
+## What it does
 
-**VoiceIQ** is a production-ready voice-first AI system that demonstrates modern best practices in AI application development:
+Parents, students and visitors usually have to dig through dozens of pages to find one fact on an organisation's website. **VoiceIQ** lets them **just ask out loud**. It crawls the site into a private knowledge base, listens to the question, finds the relevant passages and has **three language models answer in parallel**, each answer read back as speech.
 
-- 🎤 **Voice-Native Interaction** – Speak naturally and hear AI respond  
-- 🧠 **Multi-Model Intelligence** – Get answers from 3 different AI models simultaneously  
-- 📚 **Knowledge-Aware (RAG)** – AI understands domain-specific context via semantic search  
-- ⚡ **Parallel Processing** – Fast, concurrent LLM inference  
-- 🎨 **Beautiful UI** – Modern, responsive frontend with gradient design  
-- 🏗️ **Clean Architecture** – Scalable, maintainable, production-grade codebase  
+Every answer is grounded: the models may only use the retrieved website text, and if the answer is not there they say so instead of guessing. The demo knowledge base is built from a school website.
 
-> Perfect for portfolios, demos, startups, and AI research prototypes.
+A recorded walkthrough is in [`Video/Sample_Video.mp4`](Video/Sample_Video.mp4).
 
----
-
-## ✨ Key Features
-
-| Feature | Details |
-|---------|---------|
-| 🎤 **Live Voice Recording** | Intuitive microphone-based interaction |
-| 🎧 **Speech-to-Text** | Powered by Deepgram API (neural accuracy) |
-| 🧠 **Intelligent Retrieval** | FAISS-based semantic search with sentence embeddings |
-| 🤖 **Triple LLM Power** | Google Gemini • DeepSeek • Moonshot Kimi |
-| ⚙️ **Parallel Orchestration** | Concurrent inference (3 models simultaneously) |
-| 🔊 **Natural Speech Output** | Google Text-to-Speech with audio playback |
-| 🎨 **Responsive Design** | Mobile-friendly UI with gradient aesthetics |
-| 🔐 **Secure** | Environment-based secret management |
-| 📊 **Production-Grade** | Error handling, timeouts, retry logic |
-
----
-
-## 🏗️ System Architecture
+## How a question flows
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    USER INTERACTION                         │
-│                  (Browser / Frontend)                       │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ↓ (Audio File)
-┌─────────────────────────────────────────────────────────────┐
-│                  FRONTEND (Port 3000)                        │
-│            Microphone Recording • Audio Processing           │
-│         Vue/React-like UI with Gradient Design              │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ↓ (POST /ask-voice)
-┌─────────────────────────────────────────────────────────────┐
-│                 FASTAPI BACKEND (Port 8000)                 │
-│              Async Request Handling • CORS Setup            │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-          ┌────────────┼────────────┐
-          ↓            ↓            ↓
-    ┌──────────┐ ┌──────────┐ ┌──────────┐
-    │  STT     │ │   RAG    │ │   LLMs   │
-    │(Deepgram)│ │  (FAISS) │ │(Parallel)│
-    └──────────┘ └──────────┘ └──────────┘
-          │            │            │
-          └────────────┼────────────┘
-                       ↓
-            ┌─────────────────────┐
-            │   TTS + Audio Hex   │
-            │   (Google gTTS)     │
-            └──────────┬──────────┘
-                       │
-                       ↓ (JSON Response)
-         ┌──────────────────────────────┐
-         │ Question + Answers + Audio   │
-         └──────────────────────────────┘
+🎤 Browser recording
+      │  POST /ask-voice (audio)
+      ▼
+Deepgram nova-2  ──>  question text
+      │
+      ▼
+FAISS search over website chunks (all-MiniLM-L6-v2 embeddings, top 5)
+      │
+      ▼
+Three LLM slots run in parallel (ThreadPoolExecutor)
+  ├── Gemini (Google AI)
+  ├── Kimi slot (OpenRouter)
+  └── DeepSeek (OpenRouter)
+      │
+      ▼
+gTTS turns each answer into MP3  ──>  JSON: question, three answers, three audio clips
 ```
 
----
+## Building the knowledge base
 
-## 📂 Project Structure
+`backend/core/ingest.py` turns any website into searchable chunks:
 
-```
-VoiceIQ/
-├── 📄 README.md                 # You are here
-├── 🔑 .env                      # API keys (KEEP SECRET!)
-├── 📋 requirements.txt          # Python dependencies
-├── .gitignore                   # Git ignore rules
-│
-├── backend/                     # ⚡ FastAPI Backend
-│   ├── app.py                   # Main FastAPI application
-│   ├── config.py                # Configuration & API keys
-│   │
-│   ├── core/                    # Core AI Logic
-│   │   ├── answer_engine.py     # LLM orchestrator (parallel inference)
-│   │   ├── rag.py               # RAG retriever (FAISS + embeddings)
-│   │   └── ingest.py            # Data ingestion pipeline
-│   │
-│   ├── llms/                    # LLM Integrations
-│   │   ├── gemini.py            # Google Gemini API
-│   │   ├── deepseek.py          # DeepSeek (via OpenRouter)
-│   │   ├── kimi.py              # Kimi (via OpenRouter)
-│   │   └── prompts/
-│   │       └── prompt.txt       # System prompt template
-│   │
-│   ├── voice/                   # Voice Processing
-│   │   ├── stt.py               # Speech-to-Text (Deepgram)
-│   │   └── tts.py               # Text-to-Speech (Google gTTS)
-│   │
-│   ├── data/                    # Knowledge Base (RAG)
-│   │   ├── chunks.json          # Vectorized text chunks
-│   │   ├── embeddings.json      # Vector embeddings
-│   │   └── pages.json           # Source metadata
-│   │
-│   ├── temp_audio/              # Runtime TTS output (auto-created)
-│   └── tests/                   # Validation & integration tests
-│
-└── frontend/                    # 🎨 Web UI
-    ├── index.html               # Main page (1300+ lines)
-    └── config.js                # API config & utilities
-```
+1. **Crawl** the site from its home page, staying on the same domain, up to depth 3.
+2. **Clean** each page's HTML into plain text with BeautifulSoup.
+3. **Chunk** the text into 900-character pieces with 200 characters of overlap, so no fact is cut in half.
+4. **Embed** each chunk with Sentence Transformers (`all-MiniLM-L6-v2`).
+5. **Save** pages, chunks and vectors to `backend/data/` as JSON.
 
----
+At start-up, `rag.py` loads the vectors into a FAISS index for fast similarity search. Change `BASE_URL` in `ingest.py` and rerun it to point VoiceIQ at a different website.
 
-## ⚙️ Technology Stack
+## Features
 
-### **Backend**
-```
-FastAPI (0.110.0)              Modern async Python web framework
-Uvicorn                         ASGI server for FastAPI
-Python 3.10+                    Core language
-```
+- **Voice in, voice out:** speak a question, listen to the answers.
+- **Three opinions at once:** compare how different models answer the same grounded question, side by side.
+- **Grounded answers only:** a strict prompt forbids outside knowledge and handles greetings politely.
+- **Fast:** model calls run concurrently, and audio is generated in memory and sent as hex in the JSON response.
+- **Secrets kept out of code:** all API keys load from a `.env` file.
 
-### **AI & Voice**
-```
-Google Gemini API               Latest generative AI model
-OpenRouter                      Gateway for DeepSeek & Kimi
-Deepgram (Nova-2)               Neural speech-to-text
-Google Text-to-Speech (gTTS)    Voice synthesis
-```
+## Run it
 
-### **Vector Search & Embeddings**
-```
-FAISS (1.8.0+)                  Efficient similarity search
-Sentence Transformers           Semantic embeddings (all-MiniLM-L6-v2)
-NumPy                           Numerical computations
-scikit-learn                    Additional ML utilities
-```
-
-### **Frontend**
-```
-HTML5                           Structure
-CSS3 (Gradients)                Modern styling
-JavaScript (Vanilla)            Client-side logic
-Web Audio API                   Microphone access
-Fetch API                       HTTP requests
-```
-
----
-
-## 🚀 Quick Start
-
-### **Prerequisites**
-- Python 3.10 or higher
-- pip (Python package manager)
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-
-### **Step 1: Clone Repository**
 ```bash
-git clone https://github.com/your-username/voiceiq.git
-cd voiceiq
-```
-
-### **Step 2: Create Virtual Environment**
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
-
-# macOS / Linux
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### **Step 3: Install Dependencies**
-```bash
+git clone https://github.com/21Afnan/VoiceIQ.git
+cd VoiceIQ
 pip install -r backend/requirements.txt
 ```
 
-### **Step 4: Configure API Keys**
+Create `.env` in the project root:
+
+```
+DEEPGRAM_API_KEY=your_key
+GEMINI_API_KEY=your_key
+OPENROUTER_API_KEY=your_key       # DeepSeek slot
+OPENROUTER_API_KEY2=your_key      # Kimi slot (can be the same key)
+```
+
+Build the knowledge base (optional, sample data is included) and start the API:
+
 ```bash
-# Edit .env file and add your API keys:
-GEMINI_API_KEY=your_key_here
-DEEPSEEK_API_KEY=your_key_here
-OPENROUTER_API_KEY=your_key_here
-OPENROUTER_API_KEY2=your_key_here
-DEEPGRAM_API_KEY=your_key_here
+python -m backend.core.ingest
+uvicorn backend.app:app --reload --port 8000
 ```
 
-### **Step 5: Start Backend**
-```bash
-cd backend
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+Then open `frontend/index.html`, allow the microphone and ask a question.
+
+## API
+
+| Method | Endpoint | Input | Returns |
+|---|---|---|---|
+| `GET` | `/` | | health check |
+| `POST` | `/ask-voice` | audio file | question text, one answer per model, one MP3 (hex) per model |
+
+## Project structure
+
 ```
-
-Backend runs at: **http://localhost:8000**
-
-### **Step 6: Start Frontend (New Terminal)**
-```bash
-cd frontend
-python -m http.server 3000
+VoiceIQ/
+├── backend/
+│   ├── app.py              # FastAPI app and /ask-voice
+│   ├── config.py
+│   ├── core/
+│   │   ├── ingest.py       # crawl, clean, chunk, embed
+│   │   ├── rag.py          # FAISS retriever
+│   │   └── answer_engine.py# parallel multi-LLM answers
+│   ├── llms/               # gemini.py, kimi.py, deepseek.py, prompts/
+│   ├── voice/              # stt.py (Deepgram), tts.py (gTTS)
+│   └── data/               # pages, chunks, embeddings
+├── frontend/               # index.html and config.js
+└── Video/                  # demo recording
 ```
-
-Frontend runs at: **http://localhost:3000**
-
-### **Step 7: Open in Browser**
-Navigate to **http://localhost:3000** and start speaking! 🎤
-
----
-
-## 📡 API Endpoints
-
-### **Health Check**
-```http
-GET /
-```
-**Response:**
-```json
-{
-  "status": "ok",
-  "message": "VoiceIQ API running"
-}
-```
-
-### **Process Voice**
-```http
-POST /ask-voice
-Content-Type: multipart/form-data
-
-Body: 
-  file: <audio.wav>
-```
-
-**Response:**
-```json
-{
-  "question_voice_text": "What curriculum does Sunmarke offer?",
-  "answers_text": {
-    "Gemini": "Sunmarke offers the British curriculum...",
-    "DeepSeek": "The school provides multiple curriculum paths...",
-    "Kimi": "Sunmarke School offers A-Level, IB, and BTEC..."
-  },
-  "answers_audio": {
-    "Gemini": "48656c6c6f...",
-    "DeepSeek": "48656c6c6f...",
-    "Kimi": "48656c6c6f..."
-  }
-}
-```
-
----
-
-## 🎯 Usage Guide
-
-### **Recording & Processing**
-1. **Click the microphone button** – Starts recording
-2. **Speak your question** – Ask anything about the knowledge base
-3. **Click again to stop** – Ends recording and sends to backend
-4. **Wait for responses** – All 3 models respond in parallel (~5-10 seconds)
-5. **Click voice icon** – Hear each AI's answer read aloud
-
-### **Example Questions**
-- "What curriculum does Sunmarke offer?"
-- "What are the school timings?"
-- "What is the tuition fee?"
-- "What extracurricular activities are available?"
-
----
-
-## 🧠 How It Works
-
-### **1. Speech-to-Text (STT)**
-- Deepgram API transcribes your audio to text
-- Neural model provides ~95%+ accuracy
-- Supports multiple languages
-
-### **2. Retrieval-Augmented Generation (RAG)**
-- Converts your question to embeddings
-- Searches FAISS index for similar content
-- Retrieves top 5 relevant chunks from knowledge base
-- Combines chunks into context for LLMs
-
-### **3. Parallel LLM Inference**
-- Question + Context sent to all 3 models simultaneously
-- Uses Python's `ThreadPoolExecutor` for concurrency
-- Models run in parallel (not sequential)
-- Faster response time than waiting for each model
-
-### **4. Text-to-Speech (TTS)**
-- Google gTTS converts each AI response to MP3
-- MP3 converted to hex string for JSON response
-- Frontend decodes hex and plays audio
-
----
-
-## 📊 Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| **STT Latency** | ~2-3 seconds (Deepgram) |
-| **RAG Retrieval** | ~100ms (FAISS) |
-| **LLM Response** | ~3-8 seconds (parallel) |
-| **TTS Generation** | ~2-3 seconds per answer |
-| **Total E2E** | ~10-15 seconds |
-| **Concurrent Requests** | 3+ models in parallel |
-| **Audio Format** | MP3 (hex-encoded in JSON) |
-
----
-
-## 🔐 Security & Environment
-
-### **Required API Keys**
-Create a `.env` file in the root directory:
-
-```env
-# Google Cloud
-GEMINI_API_KEY=AIzaSy...
-
-# OpenRouter (for DeepSeek & Kimi)
-OPENROUTER_API_KEY=sk-or-v1-...
-OPENROUTER_API_KEY2=sk-or-v1-...
-
-# Deepgram
-DEEPGRAM_API_KEY=4ade...
-```
-
-### **Best Practices**
-- ✅ Never commit `.env` to version control
-- ✅ Use `.gitignore` to exclude secrets
-- ✅ Rotate API keys regularly
-- ✅ Use service accounts for production
-- ✅ Monitor API usage and costs
-
----
-
-## ⚠️ Limitations & Considerations
-
-### **Current Limitations**
-- STT requires **clear English speech**
-- No audio file upload (must record in-app)
-- Knowledge base is static (no real-time updates)
-- Kimi availability depends on OpenRouter API status
-- No user authentication (add for production)
-- Single-threaded at API level (scale horizontally)
-
-### **Future Enhancements**
-- [ ] Custom knowledge base ingestion
-- [ ] User authentication & API keys
-- [ ] Conversation history & memory
-- [ ] Custom LLM fine-tuning
-- [ ] Real-time knowledge updates
-- [ ] Advanced audio processing
-- [ ] Multi-language support
-- [ ] Deployment templates
-
----
-
-## 🤝 Contributing
-
-This is a portfolio/demo project, but contributions are welcome!
-
-### **Ways to Contribute**
-- Report bugs and issues
-- Suggest new features
-- Improve documentation
-- Optimize performance
-- Add more LLM integrations
-- Enhance UI/UX
-
----
-
-## 📄 License
-
-This project is open source under the **MIT License**.
-
----
-
-## 🙏 Acknowledgments
-
-- **FastAPI** – Modern Python web framework
-- **Deepgram** – Neural speech-to-text
-- **Google Cloud** – Gemini & Text-to-Speech APIs
-- **OpenRouter** – LLM gateway service
-- **FAISS** – Vector similarity search
-- **Sentence Transformers** – Embedding models
 
 ---
 
 <div align="center">
 
-### **Built with ❤️ for the AI community**
+**Afnan Shoukat**
 
-**VoiceIQ** demonstrates production-grade AI system design patterns.  
-Perfect for learning, portfolios, and real-world applications.
+<a href="mailto:afnanshoukat35@gmail.com"><img src="https://img.shields.io/badge/Email-afnanshoukat35%40gmail.com-FF4FA3?style=for-the-badge&logo=gmail&logoColor=white&labelColor=4A0D2E" alt="Email"/></a>
+<a href="https://www.linkedin.com/in/afnanshoukat"><img src="https://img.shields.io/badge/LinkedIn-Afnan%20Shoukat-FF4FA3?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=4A0D2E" alt="LinkedIn"/></a>
+<a href="https://github.com/21Afnan"><img src="https://img.shields.io/badge/GitHub-21Afnan-FF4FA3?style=for-the-badge&logo=github&logoColor=white&labelColor=4A0D2E" alt="GitHub"/></a>
 
-**Version:** 1.0.0 | **Last Updated:** January 2026
+Released under the [MIT License](LICENSE).
 
 </div>
